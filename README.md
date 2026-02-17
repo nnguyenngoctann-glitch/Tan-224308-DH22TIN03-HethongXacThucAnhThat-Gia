@@ -2,10 +2,9 @@
 Đồ án: Hệ thống xác thực ảnh thật, ảnh AI, ảnh chỉnh sửa.
 
 ## Tổng quan
-Dự án dùng mô hình học sâu để phân loại ảnh thành 3 lớp:
+Dự án dùng mô hình học sâu để phân loại ảnh thành 2 lớp:
 - real - ảnh thật
 - ai_generated - ảnh do AI tạo
-- edited - ảnh đã qua chỉnh sửa 
 
 Hệ thống gồm 2 phần:
 - Backend API để nhận ảnh và trả kết quả dự đoán.
@@ -20,7 +19,7 @@ Hệ thống gồm 2 phần:
 - HTML, CSS, JavaScript dùng để thiết kế giao diện web
 
 ## Quy trình xây dựng dự án
-1. Chuẩn bị dữ liệu ảnh theo thư mục lớp (`real`, `ai_generated`, `edited`).
+1. Chuẩn bị dữ liệu ảnh theo thư mục lớp (`real`, `ai_generated`).
 (Hiện tại em đang train lại vì đang bị chênh lệch số hình của các lớp )
 2. Tiền xử lý ảnh: resize `224x224`, normalize theo ImageNet, augment cho tập train.
 3. Xây dựng mô hình `ResNet50` theo hướng transfer learning.
@@ -32,9 +31,8 @@ Hệ thống gồm 2 phần:
 8. Kết nối frontend để upload ảnh và hiển thị kết quả.
 
 ## Dataset để train :
-- ai_generated : 4600 ảnh
-- edited : 4600 ảnh
-- real : 4600 ảnh
+- ai_generated : 6000 ảnh
+- real : 6000 ảnh
 ## Chia train/val (80/20) :
 - train : 80%
 - Validation (hình để test model ) : 20%
