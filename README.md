@@ -1,48 +1,104 @@
 # Tan-224308-DH22TIN03-HethongXacThucAnhThat-Gia
-Đồ án: Hệ thống xác thực ảnh thật và ảnh AI.
 
-## Tổng quan
-Dự án sử dụng mô hình học sâu để phân loại ảnh thành 2 lớp:
-- real: ảnh thật
-- ai_generated: ảnh do AI tạo
+Đồ án: Hệ thống xác thực ảnh thật và ảnh do AI tạo.
 
-Hệ thống gồm:
-- Backend API để nhận ảnh và trả kết quả dự đoán
-- Frontend để tải ảnh và hiển thị kết quả
+## 1. Tổng quan
+Dự án gồm 2 phần:
+- backend: xử lý dữ liệu, train/evaluate mô hình, API FastAPI, Grad-CAM.
+- frontend: giao diện upload ảnh và hiển thị kết quả dự đoán.
 
-## Công nghệ sử dụng
-- Python
-- PyTorch, Torchvision
-- FastAPI, Uvicorn
-- Pillow, NumPy
-- scikit-learn, matplotlib, seaborn
-- HTML, CSS, JavaScript
+Mô hình đang dùng chính:
+- EfficientNet-B0 (PyTorch) cho bài toán phân loại 2 lớp: real và fake.
 
-## Quy trình xây dựng
-1. Chuẩn bị dữ liệu theo 2 lớp real và ai_generated
-2. Tiền xử lý ảnh: resize 224x224, normalize theo ImageNet, augment cho train
-3. Xây dựng mô hình ResNet50 theo transfer learning
-4. Huấn luyện mô hình với CrossEntropyLoss và Adam
-5. Đánh giá bằng accuracy, confusion matrix, classification report
-6. Lưu model tốt nhất tại model/best_model.pth
-7. Triển khai API qua FastAPI với endpoint predict và predict_batch
-8. Kết nối frontend để upload ảnh và xem kết quả
+## 2. Cấu trúc thư mục
 
-## Dataset train hiện tại
-- Đường dẫn: dataset/train_binary_balanced_10000
-- ai_generated: 10000 ảnh
-- real: 10000 ảnh
+```text
+backend/
+  api.py
+  train.py
+  evaluate.py
+  chia_du_lieu.py
+  tron_du_lieu_2_nguon.py
+  model_two_branch.py
+  grad_cam.py
 
-## Dataset validation hiện tại
-- Đường dẫn: dataset/val_binary_balanced
-- ai_generated: 804 ảnh
-- real: 804 ảnh
+frontend/
+  index.html
+  style.css
+  app.js
 
-## Trạng thái dữ liệu
-- Đã làm sạch trùng ảnh trong từng bộ
-- Đã loại trùng chéo giữa train và validation
-- Train và validation hiện không bị leakage dữ liệu
+du_lieu/
+  train/that, train/gia
+  val/that,   val/gia
+  test/that,  test/gia
+```
 
-## Tỷ lệ train/validation khi huấn luyện
-- Train: 80%
-- Validation: 20% (chia từ dataset train trong quá trình training)
+## 3. Những gì đã làm
+
+### 3.1. Chuẩn bị dữ liệu
+- Đã tạo script chia dữ liệu: `backend/chia_du_lieu.py`.
+- Đã tạo script trộn dữ liệu 2 nguồn fake có kiểm soát: `backend/tron_du_lieu_2_nguon.py`.
+- Quy tắc trộn hiện tại:
+  - `that`: chỉ lấy từ 1 nguồn (`dataset1`).
+  - `gia`: trộn `dataset1` 70% + `dataset2` 30%.
+  - Cân bằng lớp theo từng split: `that = gia`.
+  - Tỉ lệ split: `train/val/test = 80/10/10`.
+
+### 3.2. Train mô hình
+- File: backend/train.py.
+- Backbone: `EfficientNet-B0` pretrained.
+- Output: 2 lớp.
+- Augmentation train:
+  - `Resize(256) -> CenterCrop(224) -> RandomHorizontalFlip -> ColorJitter -> GaussianBlur.
+- Normalize theo ImageNet mean/std.
+- Optimizer: Adam (`lr=1e-4`), loss: CrossEntropyLoss.
+- Lưu model tốt nhất theo validation accuracy: best_efficientnet_b0.pth.
+# Trước đó có sử dụng ResNet18 và ResNet50 :
+Lý do chọn EfficientNet-B0 thay vì ResNet18 và ResNet50:
+- So với ResNet50: EfficientNet-B0 nhẹ hơn đáng kể, ít tốn VRAM hơn, phù hợp với laptop.
+- So với ResNet18: EfficientNet-B0 thường cho chất lượng đặc trưng tốt hơn ở cùng mức tài nguyên, nên cân bằng tốt giữa tốc độ và độ chính xác.
+- Tổng thể: EfficientNet-B0 là điểm cân bằng hợp lý cho máy hiện tại (dễ train, ít lỗi thiếu bộ nhớ, chất lượng tốt).
+
+### 3.3. Đánh giá mô hình
+- File: backend/evaluate.py.
+- Chức năng:
+  - Tính `accuracy`, `precision`, `recall`, `F1-score`.
+  - In confusion matrix.
+  - Vẽ ROC curve và lưu ảnh.
+  - In xác suất dự đoán của từng ảnh test.
+
+### 3.4. Backend API
+- File: backend/api.py.
+- Endpoint chính: `POST /predict`.
+- Nhận ảnh upload, tiền xử lý như pipeline inference, trả về:
+  - label: real hoặc fake
+  - confidence: độ tin cậy
+
+### 3.5. Frontend
+- `frontend/index.html`, `frontend/style.css`, `frontend/app.js`.
+- Chức năng:
+  - Upload ảnh.
+  - Xem preview ảnh.
+  - Gọi API `/predict` bằng fetch.
+  - Hiển thị nhãn dự đoán và xác suất.
+
+### 3.6. Grad-CAM (giải thích mô hình)
+- File: backend/grad_cam.py.
+- Chức năng:
+  - Hook vào convolution layer cuối.
+  - Sinh heatmap.
+  - Overlay heatmap lên ảnh gốc.
+  - Có thể tích hợp vào FastAPI endpoint.
+
+### 3.7. Mô hình mở rộng 2 nhánh
+- File: backend/model_two_branch.py.
+- Nhánh 1: RGB qua EfficientNet backbone.
+- Nhánh 2: FFT magnitude qua CNN 3 lớp conv.
+- Nối feature 2 nhánh để phân loại 2 lớp.
+
+
+## Train model : 
+- Theo tỷ lệ là train/val/test : 80/10/10
+- Real : 15k hình ảnh
+- Fake : 15k Hình ảnh
+- train khoảng 15-20 epochs
