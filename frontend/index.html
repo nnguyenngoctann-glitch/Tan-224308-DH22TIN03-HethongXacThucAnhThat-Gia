@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nhận diện ảnh AI</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <main class="layout">
+    <section class="card">
+      <header class="hero">
+        <p class="badge">Hệ thống phân tích - xác thực ảnh thật / giả</p>
+        <h1>Phát hiện ảnh thật hay ảnh AI</h1>
+        <p class="subtitle">Kéo thả ảnh vào khung bên dưới hoặc bấm chọn ảnh để dự đoán.</p>
+      </header>
+
+      <form id="uploadForm" class="upload-form">
+        <input id="imageInput" type="file" accept="image/*" hidden />
+
+        <div id="dropZone" class="drop-zone" role="button" tabindex="0" aria-label="Vùng tải ảnh lên">
+          <p class="drop-title">Kéo thả ảnh vào đây</p>
+          <p class="drop-subtitle">hoặc bấm để chọn ảnh từ máy</p>
+        </div>
+
+        <div class="actions">
+          <button id="chooseBtn" type="button" class="btn secondary">Chọn ảnh</button>
+          <button id="submitBtn" type="submit" class="btn primary">Phân tích ảnh</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <h2>Ảnh xem trước</h2>
+        <div class="preview-wrap">
+          <img id="preview" alt="Ảnh xem trước" />
+          <span id="emptyPreview">Chưa có ảnh nào được chọn</span>
+        </div>
+      </article>
+
+      <article class="panel result-panel">
+        <h2>Kết quả dự đoán</h2>
+        <p class="kpi">Loại ảnh: <span id="label" class="label">-</span></p>
+        <p class="kpi">Độ tin cậy: <span id="confidence">-</span></p>
+        <p id="status" class="status"></p>
+      </article>
+    </section>
+
+    <section class="panel">
+      <h2>Grad-CAM (vùng mô hình chú ý)</h2>
+      <div class="cam-grid">
+        <div class="cam-item">
+          <h3>Heatmap</h3>
+          <div class="cam-wrap">
+            <img id="camHeatmap" alt="Grad-CAM Heatmap" />
+            <span id="emptyCamHeatmap">Chưa có heatmap</span>
+          </div>
+        </div>
+        <div class="cam-item">
+          <h3>Overlay lên ảnh gốc</h3>
+          <div class="cam-wrap">
+            <img id="camOverlay" alt="Grad-CAM Overlay" />
+            <span id="emptyCamOverlay">Chưa có overlay</span>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="/app.js"></script>
+</body>
+</html>

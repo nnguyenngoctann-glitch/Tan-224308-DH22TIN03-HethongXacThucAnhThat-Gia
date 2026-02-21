@@ -1,14 +1,12 @@
 # Tan-224308-DH22TIN03-HethongXacThucAnhThat-Gia
 
-Đồ án: Hệ thống xác thực ảnh thật và ảnh do AI tạo.
+Đồ án hệ thống xác thực ảnh thật và ảnh do AI tạo.
 
 ## 1. Tổng quan
-Dự án gồm 2 phần:
-- backend: xử lý dữ liệu, train/evaluate mô hình, API FastAPI, Grad-CAM.
-- frontend: giao diện upload ảnh và hiển thị kết quả dự đoán.
-
-Mô hình đang dùng chính:
-- EfficientNet-B0 (PyTorch) cho bài toán phân loại 2 lớp: real và fake.
+- Dự án có 2 phần chính:
+  - backend: xử lý dữ liệu, huấn luyện, đánh giá, API, Grad CAM
+  - frontend: giao diện tải ảnh và hiển thị kết quả
+- Mô hình chính đang dùng: EfficientNet-B0 cho phân loại 2 lớp gia và that
 
 ## 2. Cấu trúc thư mục
 
@@ -18,8 +16,6 @@ backend/
   train.py
   evaluate.py
   chia_du_lieu.py
-  tron_du_lieu_2_nguon.py
-  model_two_branch.py
   grad_cam.py
 
 frontend/
@@ -33,72 +29,88 @@ du_lieu/
   test/that,  test/gia
 ```
 
-## 3. Những gì đã làm
+## 3. Các phần đã làm
 
-### 3.1. Chuẩn bị dữ liệu
-- Đã tạo script chia dữ liệu: `backend/chia_du_lieu.py`.
-- Đã tạo script trộn dữ liệu 2 nguồn fake có kiểm soát: `backend/tron_du_lieu_2_nguon.py`.
-- Quy tắc trộn hiện tại:
-  - `that`: chỉ lấy từ 1 nguồn (`dataset1`).
-  - `gia`: trộn `dataset1` 70% + `dataset2` 30%.
-  - Cân bằng lớp theo từng split: `that = gia`.
-  - Tỉ lệ split: `train/val/test = 80/10/10`.
+### 3.1 Huấn luyện mô hình
+- Tệp: backend/train.py
+- Backbone: EfficientNet-B0 pretrained
+- Đầu ra: 2 lớp gia và that
+- Tăng cường dữ liệu khi huấn luyện:
+  - Resize 256
+  - CenterCrop 224
+  - RandomHorizontalFlip
+  - ColorJitter
+  - GaussianBlur
+- Chuẩn hóa theo ImageNet mean và std
+- Tối ưu: Adam, tốc độ học 1e-4
+- Hàm mất mát: CrossEntropyLoss
+- Lưu mô hình tốt nhất theo độ chính xác tập val vào best_efficientnet_b0.pth
 
-### 3.2. Train mô hình
-- File: backend/train.py.
-- Backbone: `EfficientNet-B0` pretrained.
-- Output: 2 lớp.
-- Augmentation train:
-  - `Resize(256) -> CenterCrop(224) -> RandomHorizontalFlip -> ColorJitter -> GaussianBlur.
-- Normalize theo ImageNet mean/std.
-- Optimizer: Adam (`lr=1e-4`), loss: CrossEntropyLoss.
-- Lưu model tốt nhất theo validation accuracy: best_efficientnet_b0.pth.
-# Trước đó có sử dụng ResNet18 và ResNet50 :
-Lý do chọn EfficientNet-B0 thay vì ResNet18 và ResNet50:
-- So với ResNet50: EfficientNet-B0 nhẹ hơn đáng kể, ít tốn VRAM hơn, phù hợp với laptop.
-- So với ResNet18: EfficientNet-B0 thường cho chất lượng đặc trưng tốt hơn ở cùng mức tài nguyên, nên cân bằng tốt giữa tốc độ và độ chính xác.
-- Tổng thể: EfficientNet-B0 là điểm cân bằng hợp lý cho máy hiện tại (dễ train, ít lỗi thiếu bộ nhớ, chất lượng tốt).
+Lý do chọn EfficientNet-B0 vì trước đó có sử dụng qua ResNet50 và ResNet18:
+- Nhẹ hơn ResNet50, phù hợp máy có tài nguyên vừa phải
+- Thường cho đặc trưng tốt hơn ResNet18 trong nhiều trường hợp
+- Cân bằng tốt giữa tốc độ và độ chính xác
 
-### 3.3. Đánh giá mô hình
-- File: backend/evaluate.py.
+### 3.2 Đánh giá mô hình
+- Tệp: backend/evaluate.py
+- Có các chỉ số:
+  - accuracy
+  - precision
+  - recall
+  - F1 score
+- Có confusion matrix
+- Có ROC curve và lưu ảnh kết quả
+
+### 3.3 API backend
+- Tệp: backend/api.py
+- Endpoint:
+  - POST /predict
+  - POST /predict-with-cam
+- Trả về nhãn và độ tin cậy
+- Có trạng thái uncertain khi độ tin cậy thấp hơn ngưỡng
+
+### 3.4 Frontend
+- Tệp: frontend/index.html, frontend/style.css, frontend/app.js
 - Chức năng:
-  - Tính `accuracy`, `precision`, `recall`, `F1-score`.
-  - In confusion matrix.
-  - Vẽ ROC curve và lưu ảnh.
-  - In xác suất dự đoán của từng ảnh test.
+  - tải ảnh từ máy
+  - kéo thả ảnh
+  - xem ảnh xem trước
+  - gọi API và hiển thị kết quả
+  - hiển thị Grad CAM gồm heatmap và ảnh overlay
 
-### 3.4. Backend API
-- File: backend/api.py.
-- Endpoint chính: `POST /predict`.
-- Nhận ảnh upload, tiền xử lý như pipeline inference, trả về:
-  - label: real hoặc fake
-  - confidence: độ tin cậy
-
-### 3.5. Frontend
-- `frontend/index.html`, `frontend/style.css`, `frontend/app.js`.
+### 3.5 Grad CAM
+- Tệp: backend/grad_cam.py
 - Chức năng:
-  - Upload ảnh.
-  - Xem preview ảnh.
-  - Gọi API `/predict` bằng fetch.
-  - Hiển thị nhãn dự đoán và xác suất.
+  - hook vào lớp tích chập cuối
+  - sinh heatmap
+  - ghép heatmap lên ảnh gốc
+- Tích hợp vào endpoint POST /predict-with-cam
 
-### 3.6. Grad-CAM (giải thích mô hình)
-- File: backend/grad_cam.py.
-- Chức năng:
-  - Hook vào convolution layer cuối.
-  - Sinh heatmap.
-  - Overlay heatmap lên ảnh gốc.
-  - Có thể tích hợp vào FastAPI endpoint.
+## 4. Dữ liệu đang dùng để huấn luyện
+- Tỉ lệ chia: train val test bằng 80 10 10
+- Số lượng hiện tại trong du_lieu:
+  - gia: 15500 ảnh
+  - that: 15500 ảnh
+  - tổng: 31000 ảnh
+- Theo từng tập:
+  - train: gia 12400, that 12400
+  - val: gia 1550, that 1550
+  - test: gia 1550, that 1550
 
-### 3.7. Mô hình mở rộng 2 nhánh
-- File: backend/model_two_branch.py.
-- Nhánh 1: RGB qua EfficientNet backbone.
-- Nhánh 2: FFT magnitude qua CNN 3 lớp conv.
-- Nối feature 2 nhánh để phân loại 2 lớp.
+## 5. Nguồn dữ liệu
+- du_lieu_nguon/dataset chính:
+  - gia 30000
+  - that 30000
+- du_lieu_nguon/dataset phụ:
+  - gia 7536
+  - that 20000
 
-
-## Train model : 
-- Theo tỷ lệ là train/val/test : 80/10/10
-- Real : 15k hình ảnh
-- Fake : 15k Hình ảnh
-- train khoảng 15-20 epochs
+## 6. Xử lý ảnh mờ để giảm sai số ảnh chất lượng thấp
+- Ảnh mờ được tạo từ dữ liệu đã có nhãn, nhãn giữ nguyên
+- Mỗi lớp bổ sung 500 ảnh mờ:
+  - kiểu hide: 250
+  - kiểu gopro: 250
+- Chia đều theo 80 10 10:
+  - train: 400
+  - val: 50
+  - test: 50
