@@ -114,3 +114,8 @@ Lý do chọn EfficientNet-B0 vì trước đó có sử dụng qua ResNet50 và
   - train: 400
   - val: 50
   - test: 50
+ 
+
+ ## Cách chạy nhanh : 
+-B1 : -m uvicorn backend.api:app --host 0.0.0.0 --port 8000
+-B2 : truy cập http://localhost:8000
