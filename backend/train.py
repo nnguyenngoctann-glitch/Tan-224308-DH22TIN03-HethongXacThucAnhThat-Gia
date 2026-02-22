@@ -148,16 +148,36 @@ def train(args: argparse.Namespace) -> None:
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=args.learning_rate)
 
+    start_epoch = 1
     best_val_acc = 0.0
     best_state = copy.deepcopy(model.state_dict())
 
+    if args.resume:
+        checkpoint = torch.load(args.resume, map_location=device)
+        if isinstance(checkpoint, dict) and "model_state_dict" in checkpoint:
+            model.load_state_dict(checkpoint["model_state_dict"])
+            if "optimizer_state_dict" in checkpoint:
+                optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
+            best_val_acc = float(checkpoint.get("val_acc", 0.0))
+            start_epoch = int(checkpoint.get("epoch", 0)) + 1
+            best_state = copy.deepcopy(model.state_dict())
+            print(
+                f"Resumed from {args.resume} | "
+                f"start_epoch={start_epoch} | best_val_acc={best_val_acc:.4f}"
+            )
+        else:
+            model.load_state_dict(checkpoint)
+            best_state = copy.deepcopy(model.state_dict())
+            print(f"Resumed model weights from {args.resume} (no optimizer/epoch metadata)")
+
     start_time = time.time()
-    for epoch in range(1, args.epochs + 1):
+    for local_epoch in range(1, args.epochs + 1):
+        epoch = start_epoch + local_epoch - 1
         train_loss, train_acc = run_epoch(model, train_loader, criterion, device, optimizer)
         val_loss, val_acc = run_epoch(model, val_loader, criterion, device, optimizer=None)
 
         print(
-            f"Epoch [{epoch:02d}/{args.epochs}] "
+            f"Epoch [{local_epoch:02d}/{args.epochs}] (global={epoch}) "
             f"Train Loss: {train_loss:.4f} | Train Acc: {train_acc:.4f} | "
             f"Val Loss: {val_loss:.4f} | Val Acc: {val_acc:.4f}"
         )
@@ -184,10 +204,16 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Train EfficientNet-B0 for AI image detection")
     parser.add_argument("--data-root", type=str, default="du_lieu", help="Root folder containing train/val/test")
     parser.add_argument("--batch-size", type=int, default=32, help="Batch size")
-    parser.add_argument("--epochs", type=int, default=30, help="Number of training epochs")
+    parser.add_argument("--epochs", type=int, default=30, help="Number of epochs to run in this command")
     parser.add_argument("--learning-rate", type=float, default=1e-4, help="Learning rate for Adam")
     parser.add_argument("--num-workers", type=int, default=0, help="Number of dataloader workers")
     parser.add_argument("--output", type=str, default="best_efficientnet_b0.pth", help="Best model output file")
+    parser.add_argument(
+        "--resume",
+        type=str,
+        default="",
+        help="Checkpoint path to continue training and keep previous best val_acc",
+    )
     return parser.parse_args()
 
 
