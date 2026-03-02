@@ -114,9 +114,26 @@ Mức độ hoàn thiện tổng thể ước tính: 85%.
 ### 5.2 Đang thực hiện
 - Rà soát thêm trường hợp dự đoán sai.
 - Tinh chỉnh ngưỡng uncertain để tăng độ ổn định.
-- Tối ưu nội dung báo cáo học thuật.
+- Tạo bảng benchmark so sánh giữa các model theo các chỉ số.
 
-## 6. Cách chạy nhanh
+## 6. Bảng benchmark các model
+| Mô hình | Độ chính xác | Độ chuẩn xác | Độ bao phủ | Điểm F1 | ROC-AUC | Độ trễ p50 (ms) | Độ trễ p95 (ms) | Thông lượng (ảnh/giây) | RAM/VRAM suy luận |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---|
+| EfficientNet-B0 | 0.9265 | 0.9266 | 0.9265 | 0.9264 | 0.9794 | 11.16 | 14.64 | 86.12 | RAM 919.47 MB / VRAM 409.84 MB |
+| ResNet18 | 0.9158 | 0.9165 | 0.9158 | 0.9158 | 0.9687 | 3.87 | 5.81 | 212.64 | RAM 936.25 MB / VRAM 409.51 MB |
+| ResNet50 | 0.9287 | 0.9292 | 0.9287 | 0.9287 | 0.9783 | 7.92 | 11.67 | 112.63 | RAM 904.48 MB / VRAM 710.08 MB |
+| MobileNetV3-Large | 0.9284 | 0.9284 | 0.9284 | 0.9284 | 0.9802 | 8.70 | 12.78 | 106.38 | RAM 765.05 MB / VRAM 311.65 MB |
+| ConvNeXt-Tiny | 0.9374 | 0.9375 | 0.9374 | 0.9374 | 0.9835 | 9.53 | 16.76 | 88.92 | RAM 898.47 MB / VRAM 824.15 MB |
+
+## 7. Bảng so sánh trực tiếp với EfficientNet-B0
+| Model so với EfficientNet-B0 | Chất lượng dự đoán | Tốc độ suy luận | Tài nguyên | Độ khó triển khai | Khi nào nên chọn |
+|---|---|---|---|---|---|
+| ResNet18 | Thường thấp hơn nhẹ đến vừa | Nhanh hơn nhẹ | Nhẹ hơn | Dễ | Khi cần baseline nhẹ, tốc độ cao trên máy yếu |
+| ResNet50 | Có thể nhỉnh hơn trong một số tập khó | Chậm hơn rõ | Nặng hơn rõ | Dễ-trung bình | Khi ưu tiên chất lượng và chấp nhận tăng chi phí chạy |
+| MobileNetV3-Large | Thường thấp hơn nhẹ | Nhanh hơn rõ rệt | Nhẹ nhất | Trung bình | Khi ưu tiên latency thấp và deploy thiết bị hạn chế |
+| ConvNeXt-Tiny | Có tiềm năng nhỉnh hơn | Chậm hơn | Nặng hơn | Trung bình-khó hơn | Khi cần đẩy chất lượng lên thêm và đủ tài nguyên |
+
+## 8. Cách chạy nhanh
 ```bash
 pip install -r requirements.txt
 python -m uvicorn backend.api:app --host 0.0.0.0 --port 8000
