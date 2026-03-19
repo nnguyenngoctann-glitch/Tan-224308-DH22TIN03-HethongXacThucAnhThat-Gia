@@ -163,3 +163,21 @@ Truy cập: http://localhost:8000
 
 Ghi chú: Docker sẽ tự tải checkpoint từ `MODEL_URL` nếu chưa có file mô hình.
 
+## 10. Deploy lên Hugging Face Spaces (Docker)
+1) Tạo Space loại **Docker**.
+2) Push code lên Space:
+```bash
+git remote add hf https://huggingface.co/spaces/<username>/<space-name>
+git push -f hf hf-deploy:main
+```
+3) (Nếu cần) Đẩy LFS:
+```bash
+git lfs push hf hf-deploy --all
+```
+
+Biến môi trường khuyến nghị:
+- `CHECKPOINT_PATH=artifacts/bs16/best_efficientnet_b0.pth`
+- `MODEL_URL=<link .pth>`
+
+Lưu ý: SQLite trên Spaces không bền vững (restart là mất lịch sử).
+
