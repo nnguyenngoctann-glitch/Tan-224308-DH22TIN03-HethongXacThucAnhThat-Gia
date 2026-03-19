@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+
+# Local data
+/du_lieu/
+/artifacts/history.db
+
+# Artifacts (keep only main checkpoint)
+/artifacts/**/metrics_*
+/artifacts/**/roc_curve_*
+/artifacts/**/best_*.pth
+!/artifacts/bs16/best_efficientnet_b0.pth
+
+# Root checkpoints (do not track)
+/best_*.pth
+
+# Reports & generated assets
+/report_assets/
+
+# Local tooling scripts
+/_make_*.py
+/_inspect_*.py
+/_update_report_table.py
+/_regenerate_figures_vi.py
+
+# Editor
+.vscode/
