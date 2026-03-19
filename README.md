@@ -152,3 +152,14 @@ python -m uvicorn backend.api:app --host 0.0.0.0 --port 8000
 ```
 Truy cập: http://localhost:8000
 
+## 9. Chạy bằng Docker (không cần cài thêm thư viện)
+Yêu cầu: chỉ cần cài Docker.
+
+```bash
+docker compose up --build
+```
+
+Truy cập: http://localhost:8000
+
+Ghi chú: Docker sẽ tự tải checkpoint từ `MODEL_URL` nếu chưa có file mô hình.
+

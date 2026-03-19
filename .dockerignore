@@ -1,0 +1,14 @@
+__pycache__
+*.pyc
+.git
+.vscode
+du_lieu
+report_assets
+artifacts/history.db
+artifacts/**/metrics_*
+artifacts/**/roc_curve_*
+best_*.pth
+*_make_*.py
+_inspect_*.py
+_update_report_table.py
+_regenerate_figures_vi.py

@@ -1,0 +1,10 @@
+version: "3.9"
+services:
+  app:
+    build: .
+    ports:
+      - "8000:7860"
+    environment:
+      - CHECKPOINT_PATH=artifacts/bs16/best_efficientnet_b0.pth
+      - STORE_HISTORY=true
+      - MODEL_URL=https://huggingface.co/spaces/ngoctannguyen/ai-image-detector/resolve/main/artifacts/bs16/best_efficientnet_b0.pth
