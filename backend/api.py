@@ -87,7 +87,7 @@ def is_image_file(filename: str) -> bool:
     return ext in valid_ext
 
 
-CHECKPOINT_PATH = os.getenv("CHECKPOINT_PATH", "best_efficientnet_b0.pth")
+CHECKPOINT_PATH = os.getenv("CHECKPOINT_PATH", "artifacts/bs16/best_efficientnet_b0.pth")
 MODEL_TYPE = "efficientnet_b0"
 UNCERTAIN_THRESHOLD = float(os.getenv("UNCERTAIN_THRESHOLD", "0.7"))
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
