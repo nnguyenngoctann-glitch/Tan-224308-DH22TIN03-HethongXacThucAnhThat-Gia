@@ -1,9 +1,4 @@
-﻿---
-title: ai-image-detector
-sdk: docker
-app_port: 7860
----
-
+﻿
 # Hệ Thống Xác Thực Ảnh Thật/Giả
 
 Đồ án xây dựng hệ thống phân loại ảnh thật và ảnh do AI tạo, có API suy luận và giao diện web trực quan kèm Grad-CAM để giải thích kết quả.
