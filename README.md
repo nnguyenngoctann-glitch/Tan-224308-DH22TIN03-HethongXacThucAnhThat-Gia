@@ -1,4 +1,4 @@
----
+﻿---
 title: ai-image-detector
 sdk: docker
 app_port: 7860
@@ -112,23 +112,7 @@ requirements.txt           # Danh sách thư viện
   - test: 3,100 (1,550 mỗi lớp)
 - Có bổ sung ảnh mờ để cải thiện độ bền với ảnh chất lượng thấp.
 
-## 5. Tiến độ hiện tại của dự án
-Mức độ hoàn thiện tổng thể ước tính: 85%.
-
-### 5.1 Đã hoàn thành
-- Hoàn chỉnh pipeline train và lưu checkpoint tốt nhất.
-- Có module evaluate với bộ chỉ số đánh giá chính.
-- Có API suy luận ổn định cho 2 endpoint dự đoán.
-- Có frontend demo end-to-end.
-- Có Grad-CAM tích hợp vào luồng dự đoán.
-- Có tài liệu mô tả chi tiết và báo cáo tiến độ.
-
-### 5.2 Đang thực hiện
-- Rà soát thêm trường hợp dự đoán sai.
-- Tinh chỉnh ngưỡng uncertain để tăng độ ổn định.
-- Tạo bảng benchmark so sánh giữa các model theo các chỉ số.
-
-## 6. Bảng benchmark các model
+## 5. Bảng benchmark các model
 | Mô hình | Độ chính xác | Độ chuẩn xác | Độ bao phủ | Điểm F1 | ROC-AUC | Độ trễ p50 (ms) | Độ trễ p95 (ms) | Thông lượng (ảnh/giây) | RAM/VRAM suy luận |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---|
 | EfficientNet-B0 | 0.9284 | 0.9290 | 0.9284 | 0.9284 | 0.9805 | 14.54 | 26.06 | 60.27 | RAM 142.25 MB / VRAM 409.84 MB |
@@ -137,7 +121,7 @@ Mức độ hoàn thiện tổng thể ước tính: 85%.
 | MobileNetV3-Large | 0.9252 | 0.9252 | 0.9252 | 0.9252 | 0.9777 | 8.46 | 15.35 | 102.53 | RAM 942.11 MB / VRAM 311.65 MB |
 | ConvNeXt-Tiny | 0.9348 | 0.9351 | 0.9348 | 0.9348 | 0.9857 | 9.40 | 11.67 | 97.94 | RAM 854.68 MB / VRAM 824.15 MB |
 
-## 7. Bảng so sánh trực tiếp với EfficientNet-B0
+## 6. Bảng so sánh trực tiếp với EfficientNet-B0
 | Model so với EfficientNet-B0 | Chất lượng dự đoán | Tốc độ suy luận | Tài nguyên | Độ khó triển khai | Khi nào nên chọn |
 |---|---|---|---|---|---|
 | ResNet18 | Thường thấp hơn nhẹ đến vừa | Nhanh hơn nhẹ | Nhẹ hơn | Dễ | Khi cần baseline nhẹ, tốc độ cao trên máy yếu |
@@ -145,39 +129,26 @@ Mức độ hoàn thiện tổng thể ước tính: 85%.
 | MobileNetV3-Large | Thường thấp hơn nhẹ | Nhanh hơn rõ rệt | Nhẹ nhất | Trung bình | Khi ưu tiên latency thấp và deploy thiết bị hạn chế |
 | ConvNeXt-Tiny | Có tiềm năng nhỉnh hơn | Chậm hơn | Nặng hơn | Trung bình-khó hơn | Khi cần đẩy chất lượng lên thêm và đủ tài nguyên |
 
-## 8. Cách chạy nhanh
+## 7. Hướng dẫn chạy hệ thống
+### 7.0 Clone dự án
+```bash
+git clone https://github.com/nnguyenngoctann-glitch/Tan-224308-DH22TIN03-HethongXacThucAnhThat-Gia
+cd Tan-224308-DH22TIN03-HethongXacThucAnhThat-Gia
+```
+
+### 7.1 Chạy localhost
 ```bash
 pip install -r requirements.txt
 python -m uvicorn backend.api:app --host 0.0.0.0 --port 8000
 ```
 Truy cập: http://localhost:8000
 
-## 9. Chạy bằng Docker (không cần cài thêm thư viện)
-Yêu cầu: chỉ cần cài Docker.
-
+### 7.2 Chạy bằng Docker
+Yêu cầu: đã cài Docker.
 ```bash
 docker compose up --build
 ```
-
 Truy cập: http://localhost:8000
 
-Ghi chú: Docker sẽ tự tải checkpoint từ `MODEL_URL` nếu chưa có file mô hình.
-
-## 10. Deploy lên Hugging Face Spaces (Docker)
-1) Tạo Space loại **Docker**.
-2) Push code lên Space:
-```bash
-git remote add hf https://huggingface.co/spaces/<username>/<space-name>
-git push -f hf hf-deploy:main
-```
-3) (Nếu cần) Đẩy LFS:
-```bash
-git lfs push hf hf-deploy --all
-```
-
-Biến môi trường khuyến nghị:
-- `CHECKPOINT_PATH=artifacts/bs16/best_efficientnet_b0.pth`
-- `MODEL_URL=<link .pth>`
-
-Lưu ý: SQLite trên Spaces không bền vững (restart là mất lịch sử).
-
+### 7.3 Deploy lên Hugging Face Spaces (Docker)
+Link server: https://huggingface.co/spaces/ngoctannguyen/ai-image-detector
